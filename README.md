@@ -4,8 +4,9 @@
 
 An interactive HTML game that teaches Python programming fundamentals through an engaging adventure story!
 
-![Game Screenshot](![Screenshot 2025-06-23 125224](https://github.com/user-attachments/assets/08f9f917-5e2a-41c9-aa4a-4f9c202db1c1)
-)
+## Game Screenshot
+(![Screenshot 2025-06-23 125224](https://github.com/user-attachments/assets/08f9f917-5e2a-41c9-aa4a-4f9c202db1c1)
+
 
 ## 🎮 Play the Game
 
