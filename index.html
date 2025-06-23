@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Python Adventure</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+            overflow: hidden; /* Prevent body scrolling */
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            width: 95%;
+            max-width: 900px;
+            max-height: 90vh; /* Limit maximum height */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: slideIn 0.8s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes heartPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes heartBreak {
+            0% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.3) rotate(-5deg); }
+            50% { transform: scale(0.8) rotate(5deg); }
+            75% { transform: scale(1.1) rotate(-3deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .header {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            position: relative;
+            flex-shrink: 0; /* Prevent header from shrinking */
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hearts-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .heart {
+            font-size: 2em;
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        .heart.full {
+            color: #ff6b6b;
+            animation: heartPulse 2s infinite;
+        }
+
+        .heart.empty {
+            color: #ccc;
+        }
+
+        .heart.breaking {
+            animation: heartBreak 0.6s ease-out;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            margin-top: 10px;
+            border-radius: 10px;
+        }
+
+        .content {
+            padding: 20px;
+            overflow-y: auto; /* Only scroll content if absolutely necessary */
+            flex-grow: 1; /* Take up remaining space */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .story-section {
+            background: #f8f9ff;
+            border-left: 5px solid #667eea;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .code-challenge {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            flex-grow: 1;
+        }
+
+        .code-challenge.shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        .code-challenge h3 {
+            color: #feca57;
+            margin-bottom: 15px;
+            font-family: 'Comic Sans MS', cursive;
+        }
+
+        .code-options {
+            display: grid;
+            gap: 8px;
+            margin-top: 12px;
+            grid-template-columns: 1fr;
+        }
+
+        .code-btn {
+            background: #4a5568;
+            color: white;
+            border: none;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .code-btn:hover:not(:disabled) {
+            background: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .code-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .code-btn.correct {
+            background: #48bb78;
+        }
+
+        .code-btn.incorrect {
+            background: #e53e3e;
+        }
+
+        .feedback {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .correct {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 2px solid #38a169;
+        }
+
+        .incorrect {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 2px solid #e53e3e;
+        }
+
+        .progress-bar {
+            background: #e2e8f0;
+            height: 12px;
+            border-radius: 6px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            height: 100%;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(
+                -45deg,
+                rgba(255, 255, 255, 0.2) 25%,
+                transparent 25%,
+                transparent 50%,
+                rgba(255, 255, 255, 0.2) 50%,
+                rgba(255, 255, 255, 0.2) 75%,
+                transparent 75%
+            );
+            background-size: 20px 20px;
+            animation: progress-animation 1s linear infinite;
+        }
+
+        @keyframes progress-animation {
+            0% { background-position: 0 0; }
+            100% { background-position: 20px 20px; }
+        }
+
+        .next-btn {
+            background: linear-gradient(45deg, #48bb78, #38a169);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+        }
+
+        .next-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(72, 187, 120, 0.4);
+        }
+
+        .character {
+            width: 80px;
+            height: 80px;
+            background: #feca57;
+            border-radius: 50%;
+            display: inline-block;
+            position: relative;
+            margin-right: 15px;
+            vertical-align: middle;
+        }
+
+        .character::before {
+            content: "🐍";
+            font-size: 40px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .concept-box {
+            background: #e6fffa;
+            border: 2px dashed #38b2ac;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .concept-box h4 {
+            color: #234e52;
+            margin-bottom: 10px;
+        }
+
+        .game-over {
+            text-align: center;
+            background: #fed7d7;
+            border: 2px solid #e53e3e;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .victory {
+            text-align: center;
+            background: #c6f6d5;
+            border: 2px solid #38a169;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .question-counter {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <div class="hearts-container" id="heartsContainer">
+                <span class="heart full">❤️</span>
+                <span class="heart full">❤️</span>
+                <span class="heart full">❤️</span>
+            </div>
+            <h1>🐍 The Python Adventure</h1>
+            <p>Learn to code while helping Py the Python save the Digital Kingdom!</p>
+            <div class="stats">
+                <div class="question-counter">
+                    Question <span id="currentQ">1</span> of <span id="totalQ">20</span>
+                </div>
+                <div>Score: <span id="scoreDisplay">0</span></div>
+            </div>
+        </div>
+
+        <div class="content" id="gameContent">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar" style="width: 5%"></div>
+            </div>
+
+            <div id="currentScene">
+                <!-- Game content will be dynamically loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sound effects - preload them
+        const soundEffects = {
+            correct: new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"),
+            wrong: new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"),
+            win: new Audio("https://actions.google.com/sounds/v1/cartoon/descending_whistle.ogg"),
+            gameover: new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg")
+        };
+
+        // Preload sounds
+        Object.values(soundEffects).forEach(sound => {
+            sound.load();
+        });
+
+        const gameState = {
+            hearts: 3,
+            score: 0,
+            currentQuestionIndex: 0,
+            usedQuestions: [],
+            questionsAnswered: 0
+        };
+
+        const challenges = [
+            // Basic Print Statements
+            {
+                title: "Meet Py the Python!",
+                story: `<div class="character"></div>Hello! I'm Py, a friendly Python snake who lives in the Digital Kingdom. The Evil Bug has stolen our magical codes! Let's start with Python's most basic spell - making it talk!`,
+                concept: "Print Statements",
+                conceptDesc: "The print() function is how we make Python display text on the screen!",
+                question: "How do we make Python say 'Hello, World!'?",
+                code: "# This is how we make Python talk to us!",
+                options: [
+                    "print('Hello, World!')",
+                    "say('Hello, World!')",
+                    "speak('Hello, World!')",
+                    "write('Hello, World!')"
+                ],
+                correct: 0,
+                explanation: "Perfect! 'print()' is Python's way of displaying text. It's like Python's voice!"
+            },
+            {
+                title: "Py's First Words",
+                story: `<div class="character"></div>Great job! Now let's help Py introduce himself properly to the kingdom!`,
+                concept: "Print Statements",
+                conceptDesc: "We can print different messages by changing what's inside the quotes!",
+                question: "How do we make Python print 'My name is Py'?",
+                code: "# Let's help Py introduce himself!",
+                options: [
+                    "print('My name is Py')",
+                    "display('My name is Py')",
+                    "show('My name is Py')",
+                    "output('My name is Py')"
+                ],
+                correct: 0,
+                explanation: "Excellent! You can put any text inside the quotes and Python will print it!"
+            },
+            {
+                title: "Multiple Messages",
+                story: `<div class="character"></div>The villagers want to hear more from Py! Let's make Python print multiple lines!`,
+                concept: "Print Statements",
+                conceptDesc: "We can use multiple print() statements to display several lines of text!",
+                question: "How do we print two separate lines?",
+                code: "# We want to print:\n# Hello!\n# I am Py!",
+                options: [
+                    "print('Hello!')\nprint('I am Py!')",
+                    "print('Hello!' + 'I am Py!')",
+                    "print('Hello!', 'I am Py!')",
+                    "print('Hello!\\nI am Py!')"
+                ],
+                correct: 0,
+                explanation: "Great! Each print() statement creates a new line. We can have as many as we want!"
+            },
+
+            // Variables - Basic
+            {
+                title: "The Village of Variables",
+                story: `<div class="character"></div>We've reached the Village of Variables! Here, everything has a name and holds something special. Let's create our first variable!`,
+                concept: "Variables",
+                conceptDesc: "Variables are like labeled boxes where we store information to use later!",
+                question: "How do we create a variable called 'name' that stores 'Alex'?",
+                code: "# Variables are containers with labels\n# We use = to put something inside",
+                options: [
+                    "name = 'Alex'",
+                    "variable name = 'Alex'",
+                    "name === 'Alex'",
+                    "create name = 'Alex'"
+                ],
+                correct: 0,
+                explanation: "Perfect! The = sign assigns a value to a variable. Now 'name' contains 'Alex'!"
+            },
+            {
+                title: "Numbers in Variables",
+                story: `<div class="character"></div>The village shopkeeper wants to store his age! Variables can hold numbers too!`,
+                concept: "Variables",
+                conceptDesc: "Variables can store different types of data - text (strings) and numbers!",
+                question: "How do we store the number 25 in a variable called 'age'?",
+                code: "# Numbers don't need quotes!",
+                options: [
+                    "age = 25",
+                    "age = '25'",
+                    "age == 25",
+                    "set age = 25"
+                ],
+                correct: 0,
+                explanation: "Excellent! Numbers don't need quotes. Only text needs quotes around it!"
+            },
+            {
+                title: "Using Variables",
+                story: `<div class="character"></div>Now let's use our variables! The magic happens when we print them!`,
+                concept: "Variables",
+                conceptDesc: "We can use variables in print statements to display their contents!",
+                question: "How do we print the value stored in a variable called 'hero_name'?",
+                code: "hero_name = 'Brave Knight'\n# Now let's print what's inside hero_name",
+                options: [
+                    "print(hero_name)",
+                    "print('hero_name')",
+                    "print[hero_name]",
+                    "display(hero_name)"
+                ],
+                correct: 0,
+                explanation: "Great! Without quotes, Python prints the variable's value. With quotes, it prints the word itself!"
+            },
+
+            // String Operations
+            {
+                title: "The Combining Spell",
+                story: `<div class="character"></div>The village wizard teaches us about combining text! This magic is called 'concatenation'!`,
+                concept: "String Operations",
+                conceptDesc: "We can combine (concatenate) strings using the + operator!",
+                question: "How do we combine 'Hello ' and 'World!' into one message?",
+                code: "# The + operator can glue text together!",
+                options: [
+                    "print('Hello ' + 'World!')",
+                    "print('Hello ' & 'World!')",
+                    "print('Hello ' * 'World!')",
+                    "print(combine('Hello ', 'World!'))"
+                ],
+                correct: 0,
+                explanation: "Fantastic! The + operator joins strings together like magical glue!"
+            },
+            {
+                title: "Variables and Strings",
+                story: `<div class="character"></div>Let's combine variables with text to create personalized messages!`,
+                concept: "String Operations",
+                conceptDesc: "We can combine variables containing text with other strings!",
+                question: "If name = 'Sam', how do we print 'Hello Sam!'?",
+                code: "name = 'Sam'\n# We want to create a greeting",
+                options: [
+                    "print('Hello ' + name + '!')",
+                    "print('Hello name!')",
+                    "print('Hello ' + 'name' + '!')",
+                    "print(Hello + name + !)"
+                ],
+                correct: 0,
+                explanation: "Perfect! We combine the greeting text with the variable and an exclamation mark!"
+            },
+
+            // Input
+            {
+                title: "The Listening Spell",
+                story: `<div class="character"></div>A mysterious oracle wants to know your name! Let's learn how to get input from users!`,
+                concept: "User Input",
+                conceptDesc: "The input() function lets us ask users to type something!",
+                question: "How do we ask the user for their name and store it?",
+                code: "# We want to ask for the user's name",
+                options: [
+                    "name = input('What is your name? ')",
+                    "name = ask('What is your name? ')",
+                    "name = get('What is your name? ')",
+                    "name = request('What is your name? ')"
+                ],
+                correct: 0,
+                explanation: "Excellent! input() shows the message and waits for the user to type something!"
+            },
+            {
+                title: "Using Input Data",
+                story: `<div class="character"></div>Now let's use the name the oracle gave us to create a magical greeting!`,
+                concept: "User Input",
+                conceptDesc: "We can use the data from input() just like any other variable!",
+                question: "After getting the name with input(), how do we greet them?",
+                code: "user_name = input('Enter your name: ')\n# Now let's greet them",
+                options: [
+                    "print('Hello ' + user_name + '!')",
+                    "print('Hello user_name!')",
+                    "greet(user_name)",
+                    "print(Hello + user_name)"
+                ],
+                correct: 0,
+                explanation: "Great! We combine the greeting with the name they entered!"
+            },
+
+            // Conditionals - Basic
+            {
+                title: "The Forest of Decisions",
+                story: `<div class="character"></div>We enter the Forest of Decisions! Here, a talking tree blocks our path. Programs need to make choices too!`,
+                concept: "Conditionals",
+                conceptDesc: "if statements let our programs make decisions based on conditions!",
+                question: "How do we check if someone's age is 10 or older?",
+                code: "age = 12\n# We need to check if they're old enough",
+                options: [
+                    "if age >= 10:\n    print('Old enough!')",
+                    "check age >= 10:\n    print('Old enough!')",
+                    "when age >= 10:\n    print('Old enough!')",
+                    "if (age more than 10):\n    print('Old enough!')"
+                ],
+                correct: 0,
+                explanation: "Perfect! 'if' checks a condition, and '>=' means 'greater than or equal to'!"
+            },
+            {
+                title: "The Else Path",
+                story: `<div class="character"></div>The wise tree says: "What if the condition is false? We need an 'else' path!"`,
+                concept: "Conditionals",
+                conceptDesc: "else gives us something to do when the if condition is not true!",
+                question: "How do we handle both cases - old enough and not old enough?",
+                code: "age = 8\n# We need to handle both possibilities",
+                options: [
+                    "if age >= 10:\n    print('Welcome!')\nelse:\n    print('Too young!')",
+                    "if age >= 10:\n    print('Welcome!')\notherwise:\n    print('Too young!')",
+                    "if age >= 10:\n    print('Welcome!')\nif not:\n    print('Too young!')",
+                    "check age >= 10:\n    print('Welcome!')\nelse:\n    print('Too young!')"
+                ],
+                correct: 0,
+                explanation: "Excellent! 'else' runs when the 'if' condition is false. Now we handle both cases!"
+            },
+            {
+                title: "Multiple Conditions",
+                story: `<div class="character"></div>The tree has a riddle: "What if there are more than two possibilities?" Enter 'elif'!`,
+                concept: "Conditionals",
+                conceptDesc: "elif (else if) lets us check multiple conditions in order!",
+                question: "How do we check for child (under 10), teen (10-17), or adult (18+)?",
+                code: "age = 15\n# We need three different responses",
+                options: [
+                    "if age < 10:\n    print('Child')\nelif age < 18:\n    print('Teen')\nelse:\n    print('Adult')",
+                    "if age < 10:\n    print('Child')\nelse if age < 18:\n    print('Teen')\nelse:\n    print('Adult')",
+                    "check age < 10:\n    print('Child')\nelif age < 18:\n    print('Teen')\nelse:\n    print('Adult')",
+                    "if age < 10:\n    print('Child')\nif age < 18:\n    print('Teen')\nelse:\n    print('Adult')"
+                ],
+                correct: 0,
+                explanation: "Brilliant! elif checks additional conditions in order. Python stops at the first true condition!"
+            },
+
+            // Loops - For Loops
+            {
+                title: "The Loop Lake",
+                story: `<div class="character"></div>At Loop Lake, a tired frog needs to jump across 5 lily pads but doesn't want to repeat the same code!`,
+                concept: "For Loops",
+                conceptDesc: "for loops repeat code a specific number of times!",
+                question: "How do we make the frog jump 5 times?",
+                code: "# Instead of writing print('Jump!') five times...",
+                options: [
+                    "for i in range(5):\n    print('Jump!')",
+                    "repeat 5:\n    print('Jump!')",
+                    "loop 5 times:\n    print('Jump!')",
+                    "for 5:\n    print('Jump!')"
+                ],
+                correct: 0,
+                explanation: "Perfect! 'for i in range(5)' repeats the code 5 times. Much easier than writing it out!"
+            },
+            {
+                title: "Counting with Loops",
+                story: `<div class="character"></div>A wise owl wants to teach counting! Let's print numbers 1 through 5!`,
+                concept: "For Loops",
+                conceptDesc: "We can use the loop variable (i) to access each number in the range!",
+                question: "How do we print numbers 1, 2, 3, 4, 5?",
+                code: "# We want to print each number",
+                options: [
+                    "for i in range(1, 6):\n    print(i)",
+                    "for i in range(5):\n    print(i)",
+                    "for i in range(1, 5):\n    print(i)",
+                    "for num in count(1, 5):\n    print(num)"
+                ],
+                correct: 0,
+                explanation: "Great! range(1, 6) gives us 1, 2, 3, 4, 5. The second number is not included!"
+            },
+            {
+                title: "Looping Through Lists",
+                story: `<div class="character"></div>The market keeper has a list of fruits to announce! Let's loop through each one!`,
+                concept: "For Loops",
+                conceptDesc: "We can loop through items in a list, not just numbers!",
+                question: "How do we print each fruit in the list?",
+                code: "fruits = ['apple', 'banana', 'orange']\n# Print each fruit",
+                options: [
+                    "for fruit in fruits:\n    print(fruit)",
+                    "for i in fruits:\n    print(fruits[i])",
+                    "loop fruits:\n    print(fruit)",
+                    "for fruit in list:\n    print(fruit)"
+                ],
+                correct: 0,
+                explanation: "Excellent! 'for fruit in fruits' goes through each item in the list automatically!"
+            },
+
+            // Lists
+            {
+                title: "The Treasure Chest",
+                story: `<div class="character"></div>We found a treasure chest! It contains multiple items - this is like a 'list' in Python!`,
+                concept: "Lists",
+                conceptDesc: "Lists store multiple items in order, surrounded by square brackets!",
+                question: "How do we create a list of three treasures?",
+                code: "# We found gold, gems, and a sword!",
+                options: [
+                    "treasures = ['gold', 'gems', 'sword']",
+                    "treasures = ('gold', 'gems', 'sword')",
+                    "treasures = {'gold', 'gems', 'sword'}",
+                    "treasures = <'gold', 'gems', 'sword'>"
+                ],
+                correct: 0,
+                explanation: "Perfect! Square brackets [ ] create a list, and commas separate the items!"
+            },
+            {
+                title: "Accessing List Items",
+                story: `<div class="character"></div>The treasure guardian asks: "Which treasure do you want?" We need to pick specific items from our list!`,
+                concept: "Lists",
+                conceptDesc: "We use index numbers to get specific items from a list. Python starts counting at 0!",
+                question: "How do we get the first item from our treasures list?",
+                code: "treasures = ['gold', 'gems', 'sword']\n# We want the first treasure",
+                options: [
+                    "print(treasures[0])",
+                    "print(treasures[1])",
+                    "print(treasures.first)",
+                    "print(first(treasures))"
+                ],
+                correct: 0,
+                explanation: "Great! Python starts counting at 0, so [0] gets the first item, [1] gets the second, etc!"
+            },
+
+            // Functions
+            {
+                title: "The Function Castle",
+                story: `<div class="character"></div>We reach the Function Castle! The wise wizard explains: "Functions are like magical recipes you can use over and over!"`,
+                concept: "Functions",
+                conceptDesc: "Functions are reusable blocks of code that perform specific tasks!",
+                question: "How do we create a function that greets someone?",
+                code: "# We want a reusable greeting function",
+                options: [
+                    "def greet():\n    print('Hello!')",
+                    "function greet():\n    print('Hello!')",
+                    "create greet():\n    print('Hello!')",
+                    "make greet():\n    print('Hello!')"
+                ],
+                correct: 0,
+                explanation: "Excellent! 'def' defines a function. Now we can call greet() whenever we want!"
+            },
+            {
+                title: "Functions with Parameters",
+                story: `<div class="character"></div>The castle wizard says: "But what if we want to greet different people? We need parameters!"`,
+                concept: "Functions",
+                conceptDesc: "Parameters let us pass information into functions to make them more flexible!",
+                question: "How do we make a function that greets any name we give it?",
+                code: "# We want to greet different people",
+                options: [
+                    "def greet(name):\n    print('Hello ' + name + '!')",
+                    "def greet():\n    print('Hello ' + name + '!')",
+                    "function greet(name):\n    print('Hello ' + name + '!')",
+                    "def greet[name]:\n    print('Hello ' + name + '!')"
+                ],
+                correct: 0,
+                explanation: "Perfect! Parameters go in parentheses. Now we can call greet('Alice') or greet('Bob')!"
+            },
+            {
+                title: "Calling Functions",
+                story: `<div class="character"></div>Now that we've created our function, let's use it! This is called 'calling' the function!`,
+                concept: "Functions",
+                conceptDesc: "To use a function, we write its name followed by parentheses!",
+                question: "How do we call our greet function with the name 'Hero'?",
+                code: "def greet(name):\n    print('Hello ' + name + '!')\n\n# Now let's use it",
+                options: [
+                    "greet('Hero')",
+                    "call greet('Hero')",
+                    "run greet('Hero')",
+                    "execute greet('Hero')"
+                ],
+                correct: 0,
+                explanation: "Great! Just write the function name with parentheses and any parameters inside!"
+            },
+
+            // Final Boss Battle
+            {
+                title: "The Evil Bug's Challenge",
+                story: `<div class="character"></div>💀 We face the Evil Bug! It challenges us: "Show me you understand variables AND functions together!"`,
+                concept: "Integration Challenge",
+                conceptDesc: "Let's combine what we've learned about variables and functions!",
+                question: "Create a function that uses a variable to store and print a hero's power level!",
+                code: "# The Evil Bug wants to see variables inside functions!",
+                options: [
+                    "def show_power():\n    power = 100\n    print('Power level: ' + str(power))",
+                    "def show_power():\n    power = 100\n    print('Power level: ' + power)",
+                    "function show_power():\n    power = 100\n    print('Power level: ' + str(power))",
+                    "def show_power():\n    print('Power level: ' + str(power))"
+                ],
+                correct: 0,
+                explanation: "Amazing! You created a variable inside a function and converted the number to text with str()!"
+            }
+        ];
+
+        // Shuffle function to randomize options
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        // Get random unused question
+        function getNextQuestion() {
+            const availableQuestions = challenges.filter((_, index) => 
+                !gameState.usedQuestions.includes(index)
+            );
+
+            if (availableQuestions.length === 0) return null;
+
+            const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+            const selectedQuestion = availableQuestions[randomIndex];
+            const originalIndex = challenges.indexOf(selectedQuestion);
+
+            gameState.usedQuestions.push(originalIndex);
+            return selectedQuestion;
+        }
+
+        function displayQuestion() {
+            const question = getNextQuestion();
+            if (!question) {
+                displayVictory();
+                return;
+            }
+
+            gameState.currentQuestionIndex++;
+            updateUI();
+
+            const currentSceneDiv = document.getElementById('currentScene');
+
+            // Shuffle options and remember correct answer position
+            const shuffledOptions = [...question.options];
+            const correctAnswer = question.options[question.correct];
+
+            // Shuffle the options array
+            for (let i = shuffledOptions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledOptions[i], shuffledOptions[j]] = [shuffledOptions[j], shuffledOptions[i]];
+            }
+
+            // Find new position of correct answer
+            const newCorrectIndex = shuffledOptions.indexOf(correctAnswer);
+
+            const challengeHTML = `
+                <div style="display: flex; flex-direction: column; height: 100%;">
+                    <h2 style="color: #667eea; margin-bottom: 10px; font-size: 1.3em;">${question.title}</h2>
+                    <div class="story-section" style="flex-shrink: 0;">${question.story}</div>
+                    <div class="concept-box" style="flex-shrink: 0;">
+                        <h4>🧠 Concept: ${question.concept}</h4>
+                        <p>${question.conceptDesc}</p>
+                    </div>
+                    <div class="code-challenge" id="codeChallenge" style="flex-grow: 1;">
+                        <h3>🐍 Coding Challenge:</h3>
+                        <div style="margin-bottom: 10px;">${question.code}</div>
+                        <p style="color: #feca57; margin: 10px 0;">${question.question}</p>
+                        <div class="code-options">
+                            ${shuffledOptions.map((option, index) => 
+                                `<button class="code-btn" onclick="checkAnswer(${index}, ${newCorrectIndex}, '${question.explanation.replace(/'/g, "\\'")}')">
+                                    ${option}
+                                </button>`
+                            ).join('')}
+                        </div>
+                        <div id="feedback" style="flex-shrink: 0;"></div>
+                    </div>
+                    <button class="next-btn" id="nextBtn" onclick="nextQuestion()" style="display: none; margin-top: auto;">Continue Adventure! →</button>
+                </div>
+            `;
+
+            currentSceneDiv.innerHTML = challengeHTML;
+        }
+
+        function checkAnswer(selectedIndex, correctIndex, explanation) {
+            const feedbackDiv = document.getElementById('feedback');
+            const nextBtn = document.getElementById('nextBtn');
+            const buttons = document.querySelectorAll('.code-btn');
+            const codeChallenge = document.getElementById('codeChallenge');
+
+            // Disable all buttons
+            buttons.forEach(btn => btn.disabled = true);
+
+            if (selectedIndex === correctIndex) {
+                // Correct answer
+                buttons[selectedIndex].classList.add('correct');
+                feedbackDiv.innerHTML = `<div class="feedback correct">🎉 ${explanation}</div>`;
+                gameState.score += 10;
+                gameState.questionsAnswered++;
+                nextBtn.style.display = 'block';
+                
+                // Play correct sound
+                soundEffects.correct.currentTime = 0;
+                soundEffects.correct.play();
+            } else {
+                // Wrong answer
+                buttons[selectedIndex].classList.add('incorrect');
+                buttons[correctIndex].classList.add('correct');
+                feedbackDiv.innerHTML = `<div class="feedback incorrect">💔 Not quite right! The correct answer is highlighted. Try to remember this for next time!</div>`;
+
+                // Play wrong sound
+                soundEffects.wrong.currentTime = 0;
+                soundEffects.wrong.play();
+
+                // Lose a heart
+                loseHeart();
+
+                // Shake animation
+                codeChallenge.classList.add('shake');
+                setTimeout(() => {
+                    codeChallenge.classList.remove('shake');
+                }, 500);
+
+                gameState.questionsAnswered++;
+
+                // Check if game over
+                if (gameState.hearts <= 0) {
+                    setTimeout(() => {
+                        displayGameOver();
+                    }, 1500);
+                } else {
+                    nextBtn.style.display = 'block';
+                }
+            }
+
+            updateUI();
+        }
+
+        function loseHeart() {
+            const hearts = document.querySelectorAll('.heart');
+            const heartToBreak = hearts[gameState.hearts - 1];
+
+            heartToBreak.classList.add('breaking');
+            heartToBreak.classList.remove('full');
+            heartToBreak.classList.add('empty');
+
+            setTimeout(() => {
+                heartToBreak.classList.remove('breaking');
+            }, 600);
+
+            gameState.hearts--;
+        }
+
+        function updateUI() {
+            document.getElementById('currentQ').textContent = gameState.questionsAnswered + 1;
+            document.getElementById('totalQ').textContent = Math.min(challenges.length, 20);
+            document.getElementById('scoreDisplay').textContent = gameState.score;
+
+            const progress = (gameState.questionsAnswered / Math.min(challenges.length, 20)) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        function nextQuestion() {
+            if (gameState.questionsAnswered >= 20 || gameState.usedQuestions.length >= challenges.length) {
+                displayVictory();
+            } else {
+                displayQuestion();
+            }
+        }
+
+        function displayGameOver() {
+            const currentSceneDiv = document.getElementById('currentScene');
+            currentSceneDiv.innerHTML = `
+                <div class="game-over">
+                    <h2>💔 Game Over!</h2>
+                    <div class="character"></div>
+                    <p>Oh no! Py ran out of energy! But don't worry - every great coder makes mistakes while learning!</p>
+                    <p><strong>Your Score:</strong> ${gameState.score} points</p>
+                    <p><strong>Questions Answered:</strong> ${gameState.questionsAnswered}</p>
+                    <div class="concept-box">
+                        <h4>💡 Learning Tip:</h4>
+                        <p>Programming is all about practice and learning from mistakes. Every error teaches us something new!</p>
+                    </div>
+                    <button class="next-btn" onclick="restartGame()">Try Again! 🎮</button>
+                </div>
+            `;
+            
+            // Play game over sound
+            soundEffects.gameover.currentTime = 0;
+            soundEffects.gameover.play();
+        }
+
+        function displayVictory() {
+            const currentSceneDiv = document.getElementById('currentScene');
+            const heartsLeft = gameState.hearts;
+            const finalScore = gameState.score + (heartsLeft * 50); // Bonus for hearts remaining
+
+            let rank = "Coding Apprentice";
+            if (finalScore >= 300) rank = "Python Master";
+            else if (finalScore >= 200) rank = "Code Wizard";
+            else if (finalScore >= 100) rank = "Digital Hero";
+
+            currentSceneDiv.innerHTML = `
+                <div class="victory">
+                    <h2>🎉 Victory! Kingdom Saved!</h2>
+                    <div class="character"></div>
+                    <p>Congratulations! You've helped Py defeat the Evil Bug and saved the Digital Kingdom!</p>
+
+                    <div style="background: white; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                        <h3>🏆 Final Results:</h3>
+                        <p><strong>Score:</strong> ${gameState.score} points</p>
+                        <p><strong>Hearts Remaining:</strong> ${heartsLeft} ❤️ (+${heartsLeft * 50} bonus points)</p>
+                        <p><strong>Final Score:</strong> ${finalScore} points</p>
+                        <p><strong>Rank:</strong> ${rank}</p>
+                    </div>
+
+                    <div class="concept-box">
+                        <h4>🐍 Your Python Journey:</h4>
+                        <p>✨ <strong>Print statements</strong> - Make Python talk!<br>
+                        ✨ <strong>Variables</strong> - Store information in labeled containers<br>
+                        ✨ <strong>String operations</strong> - Combine text like magic<br>
+                        ✨ <strong>User input</strong> - Let users interact with programs<br>
+                        ✨ <strong>Conditionals</strong> - Help Python make smart decisions<br>
+                        ✨ <strong>Loops</strong> - Repeat actions without getting tired<br>
+                        ✨ <strong>Lists</strong> - Store multiple items together<br>
+                        ✨ <strong>Functions</strong> - Create reusable code spells!</p>
+                    </div>
+
+                    <p>You're now ready to start your real Python coding journey! Keep practicing and exploring!</p>
+                    <button class="next-btn" onclick="restartGame()">Play Again! 🎮</button>
+                </div>
+            `;
+            
+            // Play victory sound
+            soundEffects.win.currentTime = 0;
+            soundEffects.win.play();
+        }
+
+        function restartGame() {
+            gameState.hearts = 3;
+            gameState.score = 0;
+            gameState.currentQuestionIndex = 0;
+            gameState.usedQuestions = [];
+            gameState.questionsAnswered = 0;
+
+            // Reset hearts display
+            const hearts = document.querySelectorAll('.heart');
+            hearts.forEach(heart => {
+                heart.classList.remove('empty', 'breaking');
+                heart.classList.add('full');
+            });
+
+            updateUI();
+            displayQuestion();
+        }
+
+        // Start the game
+        displayQuestion();
+    </script>
+</body>
+</html>
